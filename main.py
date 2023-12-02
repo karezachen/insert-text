@@ -54,11 +54,11 @@ def insert_text(image_name, text):
     font_path = 'fonts/LongCang-Regular.ttf'
     max_width = max_x - min_x
     max_height = max_y - min_y
-    font_size = 100
+    font_size = 50
     font = ImageFont.truetype(font_path, font_size)
     print(f'font.get name {font.getname()}')
     while (font.getbbox(text)[2] - font.getbbox(text)[0]) < max_width and (font.getbbox(text)[3] - font.getbbox(text)[1]) < max_height:
-        font_size += 10
+        font_size += 5
         font = ImageFont.truetype(font_path, size=font_size)
 
 
