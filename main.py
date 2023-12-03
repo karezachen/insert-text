@@ -1,9 +1,14 @@
-from PIL import Image, ImageDraw, ImageFont
 import os
+import sys
 
-INPUT_PATH = 'input'
-OUTPUT_PATH = 'output'
-RED_BOX_PATH = 'red_box'
+from PIL import Image, ImageDraw, ImageFont
+
+
+ROOT_PATH = os.path.split(os.path.realpath(__file__))[0]
+print('ROOT_PATH:')
+INPUT_PATH = os.path.join(ROOT_PATH, 'input')
+OUTPUT_PATH = os.path.join(ROOT_PATH, '../insert-text-web/public/output') 
+RED_BOX_PATH = os.path.join(ROOT_PATH, 'red_box')
 
 text_positions = {
     'Smile.png': (268, 20),
@@ -51,12 +56,11 @@ def insert_text(image_name, text):
 
     draw = ImageDraw.Draw(image)
 
-    font_path = 'fonts/LongCang-Regular.ttf'
+    font_path = os.path.join(ROOT_PATH, 'fonts/LongCang-Regular.ttf')
     max_width = max_x - min_x
     max_height = max_y - min_y
     font_size = 50
     font = ImageFont.truetype(font_path, font_size)
-    print(f'font.get name {font.getname()}')
     while (font.getbbox(text)[2] - font.getbbox(text)[0]) < max_width and (font.getbbox(text)[3] - font.getbbox(text)[1]) < max_height:
         font_size += 5
         font = ImageFont.truetype(font_path, size=font_size)
@@ -84,5 +88,7 @@ def batch_insert_text(text):
 
 
 if __name__ == '__main__':
-    text = '娇'
+    text = '念'
+    if len(sys.argv) > 1:
+        text = sys.argv[1]
     batch_insert_text(text)
