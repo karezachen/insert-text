@@ -1,3 +1,5 @@
+# import cProfile
+import json
 import os
 import sys
 
@@ -5,19 +7,15 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 ROOT_PATH = os.path.split(os.path.realpath(__file__))[0]
-print('ROOT_PATH:')
 INPUT_PATH = os.path.join(ROOT_PATH, 'input')
 OUTPUT_PATH = os.path.join(ROOT_PATH, '../insert-text-web/public/output') 
 RED_BOX_PATH = os.path.join(ROOT_PATH, 'red_box')
+RED_BOX_TMP_FILE = os.path.join(RED_BOX_PATH, 'tmp.json')
 
-text_positions = {
-    'Smile.png': (268, 20),
-    'Dear.png': (200, 100),
-    'Baby.png': (200, 100),
-}
-
-def get_red_box_coordinate(image_name):
-    """"""
+def get_red_box_coordinate(image_name, tmp_red_box_data):
+    min_x, min_y, max_x, max_y = tmp_red_box_data.get(image_name, (0, 0, 0, 0))
+    if min_x != 0:
+        return min_x, min_y, max_x, max_y
 
     image_path = os.path.join(RED_BOX_PATH, image_name)
     image = Image.open(image_path)
@@ -40,9 +38,13 @@ def get_red_box_coordinate(image_name):
     max_x = max(red_boxes, key=lambda x: x[0])[0]
     max_y = max(red_boxes, key=lambda x: x[1])[1]
 
+    tmp_red_box_data[image_name] = (min_x, min_y, max_x, max_y)
+    with open(RED_BOX_TMP_FILE, 'w') as json_file:
+        json.dump(tmp_red_box_data, json_file, indent=2)
+
     return min_x, min_y, max_x, max_y
 
-def insert_text(image_name, text):
+def insert_text(image_name, text, tmp_red_box_data):
     """Insert text into image"""
 
     image_path = os.path.join(INPUT_PATH, image_name)
@@ -50,8 +52,8 @@ def insert_text(image_name, text):
 
     width, height = image.size
     print(f'width: {width}px, height: {height}px')
-   
-    min_x, min_y, max_x, max_y = get_red_box_coordinate(image_name)
+
+    min_x, min_y, max_x, max_y = get_red_box_coordinate(image_name, tmp_red_box_data)
     print(f'The coordinates of the red box are ({min_x}, {min_y}, {max_x}, {max_y}).')
 
     draw = ImageDraw.Draw(image)
@@ -76,15 +78,17 @@ def insert_text(image_name, text):
     image.save(os.path.join(OUTPUT_PATH, image_name))
 
 def batch_insert_text(text):
-
     """Traverse the INPUT directory and insert text into all pictures, relying on the red box mark."""
     if not os.path.exists(OUTPUT_PATH):
         os.makedirs(OUTPUT_PATH)
 
+    with open(RED_BOX_TMP_FILE, 'r') as json_file:
+        tmp_red_box_data = json.load(json_file)
+
     for filename in os.listdir(INPUT_PATH):
         if filename.endswith('.png'):
             print(f'===== Replacing file {filename} =====')
-            insert_text(filename, text)
+            insert_text(filename, text, tmp_red_box_data)
             print()
 
 
@@ -93,3 +97,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         text = sys.argv[1]
     batch_insert_text(text)
+
+# cProfile.run('batch_insert_text("悦")')
