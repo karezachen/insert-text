@@ -56,7 +56,8 @@ def insert_text(image_name, text):
 
     draw = ImageDraw.Draw(image)
 
-    font_path = os.path.join(ROOT_PATH, 'fonts/LongCang-Regular.ttf')
+    # font_path = os.path.join(ROOT_PATH, 'fonts/LongCang-Regular.ttf')
+    font_path = os.path.join(ROOT_PATH, 'fonts/方正行楷简体.TTF')
     max_width = max_x - min_x
     max_height = max_y - min_y
     font_size = 50
