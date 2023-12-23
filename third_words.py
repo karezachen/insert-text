@@ -7,9 +7,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 ROOT_PATH = os.path.split(os.path.realpath(__file__))[0]
-INPUT_PATH = os.path.join(ROOT_PATH, 'input')
-OUTPUT_PATH = os.path.join(ROOT_PATH, '../insert-text-web/public/output') 
-RED_BOX_PATH = os.path.join(ROOT_PATH, 'red_box')
+INPUT_PATH = os.path.join(ROOT_PATH, 'third_words_input')
+OUTPUT_PATH = os.path.join(ROOT_PATH, '../insert-text-web/public/third_words_output')
+RED_BOX_PATH = os.path.join(ROOT_PATH, 'third_words_red_box')
 RED_BOX_TMP_FILE = os.path.join(RED_BOX_PATH, 'tmp.json')
 
 def get_red_box_coordinate(image_name, tmp_red_box_data):
@@ -48,32 +48,38 @@ def insert_text(image_name, text, tmp_red_box_data):
     """Insert text into image"""
 
     image_path = os.path.join(INPUT_PATH, image_name)
+    print(f'image_path: {image_path}')
     image = Image.open(image_path)
 
     width, height = image.size
     print(f'width: {width}px, height: {height}px')
 
-    min_x, min_y, max_x, max_y = get_red_box_coordinate(image_name, tmp_red_box_data)
-    print(f'The coordinates of the red box are ({min_x}, {min_y}, {max_x}, {max_y}).')
+    for index in range(len(text)):
+        tmp_text = text[index]
+        tmp_image_name = image_name.split('.')[0] + f'_{index + 1}.' + image_name.split('.')[1]
+        print(f'Get the red box coordinates of file {tmp_image_name}.')
+        min_x, min_y, max_x, max_y = get_red_box_coordinate(tmp_image_name, tmp_red_box_data)
+        print(f'The coordinates of the red box are ({min_x}, {min_y}, {max_x}, {max_y}).')
 
-    draw = ImageDraw.Draw(image)
+        draw = ImageDraw.Draw(image)
 
-    # font_path = os.path.join(ROOT_PATH, 'fonts/LongCang-Regular.ttf')
-    font_path = os.path.join(ROOT_PATH, 'fonts/方正行楷简体.TTF')
-    max_width = max_x - min_x
-    max_height = max_y - min_y
-    font_size = 50
-    font = ImageFont.truetype(font_path, font_size)
-    while (font.getbbox(text)[2] - font.getbbox(text)[0]) < max_width and (font.getbbox(text)[3] - font.getbbox(text)[1]) < max_height:
-        font_size += 5
-        font = ImageFont.truetype(font_path, size=font_size)
+        # font_path = os.path.join(ROOT_PATH, 'fonts/LongCang-Regular.ttf')
+        font_path = os.path.join(ROOT_PATH, 'fonts/方正行楷简体.TTF')
+        max_width = max_x - min_x
+        max_height = max_y - min_y
+        font_size = 50
+        font = ImageFont.truetype(font_path, font_size)
+        f_min_x, f_min_y, f_max_x, f_max_y = font.getbbox(tmp_text)
+        while (f_max_x - f_min_x) < max_width and (f_max_y - f_min_y) < max_height:
+            font_size += 10
+            font = ImageFont.truetype(font_path, size=font_size)
+            f_min_x, f_min_y, f_max_x, f_max_y = font.getbbox(tmp_text)
 
+        text_position = (min_x, min_y)
 
-    text_position = (min_x, min_y)
+        text_color = 'black'
 
-    text_color = 'black'
-
-    draw.text(text_position, text, font=font, fill=text_color)
+        draw.text(text_position, tmp_text, font=font, fill=text_color)
 
     image.save(os.path.join(OUTPUT_PATH, image_name))
 
@@ -93,9 +99,10 @@ def batch_insert_text(text):
 
 
 if __name__ == '__main__':
-    text = '娇'
+    text = '张卓然'
     if len(sys.argv) > 1:
         text = sys.argv[1]
     batch_insert_text(text)
+    print('Finish.')
 
 # cProfile.run('batch_insert_text("悦")')

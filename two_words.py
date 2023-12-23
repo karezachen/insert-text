@@ -48,6 +48,7 @@ def insert_text(image_name, text, tmp_red_box_data):
     """Insert text into image"""
 
     image_path = os.path.join(INPUT_PATH, image_name)
+    print(f'image_path: {image_path}')
     image = Image.open(image_path)
 
     width, height = image.size
@@ -70,9 +71,9 @@ def insert_text(image_name, text, tmp_red_box_data):
         font = ImageFont.truetype(font_path, font_size)
         f_min_x, f_min_y, f_max_x, f_max_y = font.getbbox(tmp_text)
         while (f_max_x - f_min_x) < max_width and (f_max_y - f_min_y) < max_height:
-            font_size += 5
+            font_size += 10
             font = ImageFont.truetype(font_path, size=font_size)
-
+            f_min_x, f_min_y, f_max_x, f_max_y = font.getbbox(tmp_text)
 
         text_position = (min_x, min_y)
 
@@ -102,5 +103,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         text = sys.argv[1]
     batch_insert_text(text)
+    print('Finish.')
 
 # cProfile.run('batch_insert_text("悦")')
